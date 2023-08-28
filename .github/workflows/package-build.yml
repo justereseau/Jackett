@@ -4,27 +4,34 @@ env:
   IMAGE_NAME: ghcr.io/justereseau/jackett
 
 on:
+  schedule:
+    - cron: '45 * * * *'
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.github/**'
 
 jobs:
   push-store-image:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "./Store"
     steps:
-      - name: "Checkout GitHub Action"
+      - name: Checkout GitHub Action
         uses: actions/checkout@main
 
-      - name: "Login to GitHub Container Registry"
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read latest Jackett release
+        id: get_latest_release
+        run: echo "jackett_release=$(curl https://api.github.com/repos/Jackett/Jackett/releases/latest --silent | jq -r '.tag_name')" >> "$GITHUB_OUTPUT"
+        shell: bash
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -32,4 +39,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/justereseau/jackett:latest,ghcr.io/justereseau/jackett:${{github.sha}}
+          build-args: RELEASE_TAG=${{ steps.get_latest_release.outputs.jackett_release }}
+          tags: ${{ env.IMAGE_NAME }}:latest,${{ env.IMAGE_NAME }}:${{ steps.get_latest_release.outputs.jackett_release }}
