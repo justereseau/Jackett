@@ -4,8 +4,9 @@ env:
   IMAGE_NAME: ghcr.io/justereseau/jackett
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '45 6 * * *'
+    - cron: 45 6 * * *
   push:
     branches:
       - main
