@@ -11,7 +11,7 @@ WORKDIR /tmp
 
 # Do the package update and install
 RUN apk update && apk upgrade && \
-  apk add --no-cache icu-libs krb5-libs libintl libssl1.1 libstdc++ lttng-ust zlib && \
+  apk add --no-cache icu-libs libstdc++ && \
   rm -rf /var/cache/apk/*
 
 # Install Jackett
