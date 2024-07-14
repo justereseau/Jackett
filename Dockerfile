@@ -14,10 +14,22 @@ RUN apk update && apk upgrade && \
   apk add --no-cache icu-libs libstdc++ && \
   rm -rf /var/cache/apk/*
 
+# Download Jackett
+RUN case $(uname -m) in \
+  x86_64) \
+  wget -O /tmp/jacket.tar.gz https://github.com/Jackett/Jackett/releases/download/${RELEASE_TAG}/Jackett.Binaries.LinuxMuslAMDx64.tar.gz \
+  ;; \
+  aarch64) \
+  wget -O /tmp/jacket.tar.gz https://github.com/Jackett/Jackett/releases/download/${RELEASE_TAG}/Jackett.Binaries.LinuxMuslARM64.tar.gz \
+  ;; \
+  *) \
+  echo "Unsupported architecture > $(uname -m)" \
+  exit 1 \
+  ;; \
+  esac
+
 # Install Jackett
-RUN wget -O /tmp/jacket.tar.gz https://github.com/Jackett/Jackett/releases/download/${RELEASE_TAG}/Jackett.Binaries.LinuxMuslAMDx64.tar.gz \
-  && tar -xvzf /tmp/jacket.tar.gz -C /opt \
-  && rm -rf /tmp/*
+RUN tar -xvzf /tmp/jacket.tar.gz -C /opt && rm -rf /tmp/*
 
 WORKDIR /config
 
